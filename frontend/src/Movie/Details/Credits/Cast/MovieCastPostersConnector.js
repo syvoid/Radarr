@@ -18,7 +18,7 @@ function createMapStateToProps() {
       }, []);
 
       return {
-        items: cast.slice(0, 10)
+        items: cast
       };
     }
   );
