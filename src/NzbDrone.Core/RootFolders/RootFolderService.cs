@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NLog;
 using NzbDrone.Common;
@@ -158,7 +159,19 @@ namespace NzbDrone.Core.RootFolders
                 {
                     if (string.IsNullOrWhiteSpace(recycleBinPath) || di.FullName.PathNotEquals(recycleBinPath))
                     {
-                        results.Add(new UnmappedFolder { Name = di.Name, Path = di.FullName });
+                        // 判断是否年份目录，如果是，则搜索下一层的目录
+                        if (Regex.IsMatch(di.Name, @"^(1|2)\d{3}$"))
+                        {
+                            _logger.Debug("{0} is year dir ({1}).", di.Name, di.FullName);
+                            var subResults = new List<UnmappedFolder>();
+                            subResults = GetUnmappedFolders(di.FullName + "/", moviePaths);
+                            results.AddRange(subResults);
+                            _logger.Debug("{0} sub folders found.", results.Count);
+                        }
+                        else
+                        {
+                            results.Add(new UnmappedFolder { Name = di.Name, Path = di.FullName });
+                        }
                     }
                 }
             }
